@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="_receiving_clerk_2jyP5P">"receptionnaire"</string>
+  <string name="_deliverer_ZhuBgq">"livreur"</string>
+  <string name="_recipient_XdYFI">"destinataire"</string>
+  <string name="_logistic_2o6jXm">"logistique"</string>
+  <string name="_ios_info_plist_NSLocationWhenInUseUsageDescription_ZpKiIF">"This will be added to InfoPlist.strings"</string>
+  <string name="_app_name_1k3Sbz">"Logistique"</string>
+  <string name="app_name">"Logistique"</string>
+  <string name="title_activity_kimera">"Logistique"</string>
+</resources>

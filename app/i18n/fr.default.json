@@ -1,0 +1,10 @@
+{
+    "app.name": "Logistique",
+    "ios.info.plist": {
+        "NSLocationWhenInUseUsageDescription": "This will be added to InfoPlist.strings"
+    },
+    "logistic": "logistique",
+    "recipient": "destinataire",
+    "deliverer": "livreur",
+    "receiving_clerk": "receptionnaire"
+}

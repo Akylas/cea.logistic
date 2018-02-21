@@ -1,0 +1,5 @@
+<ListView items="{{ filteredDelivererItems }}"  itemTap="{{delivererItemTap}}" rowHeight="50">
+    <ListView.itemTemplate>
+            <Label text="{{ name }}" verticalAlignment="center" textWrap="true" color="black" fontSize="16" padding="5" />
+    </ListView.itemTemplate>
+</ListView>

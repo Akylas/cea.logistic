@@ -1,0 +1,9 @@
+<Page xmlns="http://schemas.nativescript.org/tns.xsd" 
+xmlns:DrawingPad="nativescript-drawingpad" loaded="onLoaded"  unloaded="onUnloaded" showingModally="showingModally" backgroundColor="white">
+  <StackLayout>
+    <DrawingPad:DrawingPad 
+            height="400" 
+            id="drawingPad" />
+    <Button class="btn btn-primary btn-rounded-sm" text="save" tap="onDone"></Button>
+  </StackLayout>
+</Page>

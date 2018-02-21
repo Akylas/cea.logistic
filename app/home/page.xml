@@ -1,0 +1,94 @@
+<Page
+    class="page"
+    navigatingTo="onNavigatingTo"  
+    xmlns:nsDrawer="nativescript-pro-ui/sidedrawer"
+    xmlns:drawer="shared/drawer"
+    xmlns:Barcode="nativescript-barcodescanner"
+    xmlns:TIL="nativescript-textinputlayout"
+    xmlns:lv="nativescript-pro-ui/listview" 
+    xmlns="http://schemas.nativescript.org/tns.xsd"
+    loaded="pageLoaded">
+    
+    <ActionBar class="action-bar">
+        <NavigationButton ios:visibility="collapsed" icon="res://menuicon"></NavigationButton>
+        <ActionItem icon="res://menuicon" 
+            android:visibility="collapsed" 
+            tap="onDrawerButtonTap"
+            ios.position="left">
+        </ActionItem>
+        <Label class="action-bar-title" text="{{ L('logistic') }}"></Label>
+    </ActionBar>
+<!-- 
+    <nsDrawer:RadSideDrawer id="sideDrawer" showOverNavigation="true">
+
+        <nsDrawer:RadSideDrawer.drawerTransition>
+            <nsDrawer:SlideInOnTopTransition/>
+        </nsDrawer:RadSideDrawer.drawerTransition>
+
+        <nsDrawer:RadSideDrawer.drawerContent>
+            <StackLayout>
+
+                <drawer:drawer-fragment selectedPage="Home"/>
+            </StackLayout>
+        </nsDrawer:RadSideDrawer.drawerContent>
+
+        <nsDrawer:RadSideDrawer.mainContent> -->
+            <TabView class="tab-view">
+    <TabView.items>
+      <TabViewItem title="Scan">
+        <TabViewItem.view>
+          <!-- <ScrollView> -->
+            <FlexboxLayout flexDirection="column" class="tab-content">
+               <TIL:TextInputLayout class="inputlayout"
+                hint="{{ L('recipient') }}">
+                <TextField id="recipientTextField" text="{{ recipient }}" color="black"/>
+              </TIL:TextInputLayout>
+              <TIL:TextInputLayout class="inputlayout"
+                hint="{{ L('deliverer') }}">
+                <TextField id="delivererTextField" text="{{ deliverer }}" />
+              </TIL:TextInputLayout>
+              <Button class="btn btn-primary" text="scan" tap="{{ doContinuousScan }}"/>
+                <lv:RadListView items="{{ pendingScans }}"  width="100%" flexGrow="1" style="border-color:black;border-radius:2;border-width:2;">
+                  <lv:RadListView.itemTemplate>
+                    <Label text="{{ text }}" verticalAlignment="center" textWrap="true" color="black" fontSize="16" padding="5" />
+                    </lv:RadListView.itemTemplate>
+                  </lv:RadListView>
+            <GridLayout columns="*,*" rows="auto,auto" width="100%" >
+            <TIL:TextInputLayout class="inputlayout" col="0" row="0"
+                hint="{{ L('receiving_clerk') }}">
+                <TextField id="clerkTextField" text="{{ receiving_clerk }}" />
+              </TIL:TextInputLayout>
+              <Button col="1" row="0" class="btn btn-primary" text="signature" tap="{{ doSign }}"/>
+              <Image col="1" row="1" rowSpan="2" id="signature" width="100%" height="100"/>
+            </GridLayout>
+              
+            </FlexboxLayout>
+            
+          <!-- </ScrollView> -->
+        </TabViewItem.view>
+      </TabViewItem>
+      <TabViewItem title="{{ L('scans') }}">
+        <TabViewItem.view>
+            <FlexboxLayout flexDirection="column">
+            <lv:RadListView items="{{ scans }}" flexGrow="1">
+            <lv:RadListView.itemTemplate>
+            <GridLayout columns="50,*" rows="*,*,*" width="100%" height="80" style="padding-right:5;padding-top:5;border-bottom-color:lightgray;border-bottom-width:1;" >
+                  <Image col="0" row="0" rowSpan="3" src="{{signature}}"/>
+                  <Label col="1" row="0" text="{{timestamp | dateFormatter(dateFormat)}}" style="text-align:right;" color="gray" fontSize="12"/>
+                  <Label col="1" row="1" text="{{recipient}}" fontSize="16"/>
+                  <StackLayout col="1" row="2" orientation="horizontal">
+                    <Label text="&#xf02a;" class="fa" color="black"  verticalAlignment="center" style="padding-right:5;"  fontSize="16"/>
+                    <Label text="{{ text }}"  color="black" verticalAlignment="center"/>
+                  </StackLayout>
+                </GridLayout>
+              </lv:RadListView.itemTemplate>
+            </lv:RadListView>
+              <Button class="btn btn-primary" text="export" tap="{{ exportScans }}"/>
+          </FlexboxLayout>
+        </TabViewItem.view>
+      </TabViewItem>
+    </TabView.items>
+  </TabView>
+        <!-- </nsDrawer:RadSideDrawer.mainContent> -->
+    <!-- </nsDrawer:RadSideDrawer> -->
+</Page>
