@@ -214,11 +214,13 @@ export class Model extends Observable {
             },
             closeCallback: () => {
                 console.log("Scanner closed @ " + new Date().getTime());
-                this.clerkTextField.focus();
-                if (device.os === platformNames.android) {
-                    console.log("about to show keyboard");
-                    utils.ad.showSoftInput(this.clerkTextField);
-                }
+                setTimeout(() => {
+                    this.clerkTextField.focus();
+                    if (device.os === platformNames.android) {
+                        console.log("about to show keyboard");
+                        utils.ad.showSoftInput(this.clerkTextField);
+                    }
+                }, 500);
             }
         });
     };
@@ -301,8 +303,8 @@ export class Model extends Observable {
                     this.recipientList.saveCurrentValue();
 
                     // clean up fields
-                    this.recipient = null;
-                    this.receiving_clerk = null;
+                    this.delivererTextField.text = this.deliverer = null;
+                    this.recipientTextField.text = this.receiving_clerk = null;
                 } else {
                     this.signatureImage.imageSource = null;
                 }
@@ -366,7 +368,9 @@ export class Model extends Observable {
 
         let testString = "date;destinataire;scan;livreur;receptionnaire;signature;";
         this.scans.forEach(scan => {
-            testString += `\n${moment(scan.timestamp).format('LLL')};${scan.recipient};${scan.text};${scan.deliverer};${scan.receiving_clerk};${imageSource.fromFile(scan.signature).toBase64String('png')};`
+            testString += `\n${moment(scan.timestamp).format("LLL")};${scan.recipient};${scan.text};${scan.deliverer};${scan.receiving_clerk};${imageSource
+                .fromFile(scan.signature)
+                .toBase64String("png")};`;
         });
         let file = fs.File.fromPath(thePath);
         file.writeTextSync(testString);
