@@ -37,10 +37,10 @@ class FilteredList extends Observable {
         super();
         this.savekey = "saved" + key;
         this.items = new ObservableArray<string>();
-        this.filteredItems = new ObservableArray<any>();
         let saved: string[] = JSON.parse(appSettings.getString(this.savekey) || "[]");
         console.log("saved", this.savekey, JSON.stringify(saved));
         saved.forEach(s => this.items.push(s));
+        this.createFiltered(this.items as any);
     }
     get items(): ObservableArray<string> {
         return this.get("_items");
@@ -79,6 +79,14 @@ class FilteredList extends Observable {
             console.log("added", this.key, value, this.toString());
         }
     };
+
+    createFiltered(items: string[] | ObservableArray<string>) {
+        this.filteredItems = new ObservableArray(
+            items.map(s => {
+                return { name: s };
+            })
+        );
+    }
     onTextFieldFocus = () => {
         // const value = this._textField.text.trim();
         if (this.filteredItems.length > 0) {
@@ -98,11 +106,7 @@ class FilteredList extends Observable {
 
     set value(value: string) {
         this._value = value;
-        if (!value || value.length === 0) {
-            this.filteredItems = new ObservableArray<object>();
-        } else {
-            this.updateFilteredTerm(value);
-        }
+        this.updateFilteredTerm(value);
     }
     get value() {
         return this._value;
@@ -112,14 +116,11 @@ class FilteredList extends Observable {
         if (this.items.length === 0) {
             return;
         }
-        var result = this.items
-            .filter(function(item) {
-                return item && item.toLowerCase() !== term.toLowerCase() && item.toLowerCase().indexOf(term.toLowerCase()) > -1;
-            })
-            .map(s => {
-                return { name: s };
-            });
-        this.filteredItems = new ObservableArray(result);
+
+        const result = (!term || term.length === 0)?(this.items as any):this.items.filter(function(item) {
+            return item && item.toLowerCase() !== term.toLowerCase() && item.toLowerCase().indexOf(term.toLowerCase()) > -1;
+        }) ;
+        this.createFiltered(result);
         if (this.filteredItems.length > 0) {
             this.parent.showPopup(this.textfield, this.key + "list");
         } else {
@@ -162,7 +163,7 @@ export class Model extends Observable {
     }
 
     set deliverer(value: string) {
-        this.delivererList.value = value.trim();
+        this.delivererList.value = !!value ? value.trim() : value;
     }
 
     set delivererTextField(value: TextField) {
@@ -185,7 +186,7 @@ export class Model extends Observable {
     }
 
     set recipient(value: string) {
-        this.recipientList.value = value.trim();
+        this.recipientList.value = !!value ? value.trim() : value;
     }
 
     set recipientTextField(value: TextField) {
@@ -304,7 +305,7 @@ export class Model extends Observable {
 
                     // clean up fields
                     this.delivererTextField.text = this.deliverer = null;
-                    this.recipientTextField.text = this.receiving_clerk = null;
+                    this.clerkTextField.text = this.receiving_clerk = null;
                 } else {
                     this.signatureImage.imageSource = null;
                 }
