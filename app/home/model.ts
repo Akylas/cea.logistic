@@ -296,8 +296,13 @@ export class Model extends Observable {
                         }
                         vibrator.vibrate(1000);
                     }
+                    //save the current entries to present them in a popup on next try
                     this.delivererList.saveCurrentValue();
                     this.recipientList.saveCurrentValue();
+
+                    // clean up fields
+                    this.recipient = null;
+                    this.receiving_clerk = null;
                 } else {
                     this.signatureImage.imageSource = null;
                 }
