@@ -6,6 +6,7 @@
     xmlns:Barcode="nativescript-barcodescanner"
     xmlns:TIL="nativescript-textinputlayout"
     xmlns:lv="nativescript-pro-ui/listview" 
+    xmlns:ct="shared/ctextfield"
     xmlns="http://schemas.nativescript.org/tns.xsd"
     loaded="pageLoaded">
     
@@ -33,20 +34,14 @@
         </nsDrawer:RadSideDrawer.drawerContent>
 
         <nsDrawer:RadSideDrawer.mainContent> -->
-            <TabView class="tab-view">
+  <TabView class="tab-view" selectedIndexChanged="onTabChanged">
     <TabView.items>
       <TabViewItem title="Scan">
         <TabViewItem.view>
           <!-- <ScrollView> -->
             <FlexboxLayout flexDirection="column" class="tab-content">
-               <TIL:TextInputLayout class="inputlayout"
-                hint="{{ L('recipient') }}">
-                <TextField id="recipientTextField" text="{{ recipient }}" color="black"/>
-              </TIL:TextInputLayout>
-              <TIL:TextInputLayout class="inputlayout"
-                hint="{{ L('deliverer') }}">
-                <TextField id="delivererTextField" text="{{ deliverer }}" />
-              </TIL:TextInputLayout>
+               <ct:CTextField class="inputlayout" hint="{{ L('recipient') }}" id="recipientTextField" text="{{ recipient }}" color="black"/>
+              <ct:CTextField class="inputlayout" hint="{{ L('deliverer') }}" id="delivererTextField" text="{{ deliverer }}" />
               <Button class="btn btn-primary" text="scan" tap="{{ doContinuousScan }}"/>
                 <lv:RadListView items="{{ pendingScans }}"  width="100%" flexGrow="1" style="border-color:black;border-radius:2;border-width:2;">
                   <lv:RadListView.itemTemplate>
@@ -54,10 +49,7 @@
                     </lv:RadListView.itemTemplate>
                   </lv:RadListView>
             <GridLayout columns="*,*" rows="auto,auto" width="100%" >
-            <TIL:TextInputLayout class="inputlayout" col="0" row="0"
-                hint="{{ L('receiving_clerk') }}">
-                <TextField id="clerkTextField" text="{{ receiving_clerk }}" />
-              </TIL:TextInputLayout>
+            <ct:CTextField class="inputlayout" col="0" row="0" id="clerkTextField" hint="{{ L('receiving_clerk') }}" text="{{ receiving_clerk }}" />
               <Button col="1" row="0" class="btn btn-primary" text="signature" tap="{{ doSign }}"/>
               <Image col="1" row="1" rowSpan="2" id="signature" width="100%" height="100"/>
             </GridLayout>
@@ -70,9 +62,17 @@
       <TabViewItem title="{{ L('scans') }}">
         <TabViewItem.view>
             <FlexboxLayout flexDirection="column">
-            <lv:RadListView items="{{ scans }}" flexGrow="1">
+            <lv:RadListView 
+            id="scansListView"
+            items="{{ scans }}" 
+            flexGrow="1"
+            itemSwipeProgressStarted="onSwipeCellStarted" 
+            swipeActions="true">
+            <lv:RadListView.listViewLayout>
+              <lv:ListViewLinearLayout scrollDirection="Vertical" itemInsertAnimation="Slide" itemDeleteAnimation="Slide"/>
+            </lv:RadListView.listViewLayout>
             <lv:RadListView.itemTemplate>
-            <GridLayout columns="50,*" rows="*,*,*" width="100%" height="80" style="padding-right:5;padding-top:5;border-bottom-color:lightgray;border-bottom-width:1;" >
+            <GridLayout columns="50,*" rows="*,*,*" width="100%" height="80"  backgroundColor="White" style="padding-right:5;padding-top:5;border-bottom-color:lightgray;border-bottom-width:1;" >
                   <Image col="0" row="0" rowSpan="3" src="{{signature}}"/>
                   <Label col="1" row="0" text="{{timestamp | dateFormatter(dateFormat)}}" style="text-align:right;" color="gray" fontSize="12"/>
                   <Label col="1" row="1" text="{{recipient}}" fontSize="16"/>
@@ -82,8 +82,18 @@
                   </StackLayout>
                 </GridLayout>
               </lv:RadListView.itemTemplate>
+              <lv:RadListView.itemSwipeTemplate>
+                <GridLayout columns="auto, *, auto" backgroundColor="White">
+                    <StackLayout id="delete-view" col="2" style="background-color: red;" tap="onRightSwipeClick"  paddingLeft="16" paddingRight="16" orientation="horizontal">
+                        <Label text="delete" style="text-size: 20" verticalAlignment="center" horizontalAlignment="center" />
+                    </StackLayout>
+                </GridLayout>
+              </lv:RadListView.itemSwipeTemplate>
             </lv:RadListView>
+            <StackLayout orientation="horizontal">
               <Button class="btn btn-primary" text="export" tap="{{ exportScans }}"/>
+              <Button class="btn btn-secondary" text="clean" tap="{{ cleanScans }}"/>
+            </StackLayout>
           </FlexboxLayout>
         </TabViewItem.view>
       </TabViewItem>

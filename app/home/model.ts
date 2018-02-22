@@ -1,4 +1,5 @@
 /// <reference path="../../node_modules/tns-platform-declarations/android.d.ts" />
+import * as moment from "moment";
 import { Observable, EventData } from "data/observable";
 import { ObservableArray } from "data/observable-array";
 import { BarcodeScanner } from "nativescript-barcodescanner";
@@ -9,14 +10,13 @@ import * as appSettings from "application-settings";
 import { Popup } from "nativescript-popup";
 import { ItemEventData } from "ui/list-view/list-view";
 import { TextField } from "ui/text-field";
+import { CTextField } from "../shared/ctextfield";
 import * as fs from "file-system";
 import * as builder from "ui/builder";
 import { Image } from "ui/Image";
 import * as imageSource from "image-source";
-import * as utils from "utils/utils";
 import { localize } from "nativescript-localize";
 import { ShareFile } from "nativescript-share-file";
-import * as moment from "moment";
 
 import { device, platformNames } from "platform";
 
@@ -29,10 +29,16 @@ function ObservableArrayToString(array: ObservableArray<any>) {
     return JSON.stringify(res);
 }
 
+function clearObservableArray(array: ObservableArray<any>) {
+    while (array.length) {
+        array.pop();
+    }
+}
+
 class FilteredList extends Observable {
     _value: string;
     savekey: string;
-    _textField: TextField;
+    _textField: CTextField;
     constructor(private key: string, private parent: Model) {
         super();
         this.savekey = "saved" + key;
@@ -88,16 +94,21 @@ class FilteredList extends Observable {
         );
     }
     onTextFieldFocus = () => {
+        console.log('onTextFieldFocus', this.key);
         // const value = this._textField.text.trim();
         if (this.filteredItems.length > 0) {
             this.parent.showPopup(this.textfield, this.key + "list");
         }
     };
-    set textfield(value: TextField) {
+    onTextFieldBlur = () => {
+        this.parent.hidePopup();
+    }
+    set textfield(value: CTextField) {
         if (value) {
             this._textField = value;
             // this._textField.on(TextField.blurEvent, this.onTextFieldBlur);
-            this._textField.on(TextField.focusEvent, this.onTextFieldFocus);
+            this._textField.textField.on(TextField.focusEvent, this.onTextFieldFocus);
+            this._textField.textField.on(TextField.blurEvent, this.onTextFieldBlur);
         }
     }
     get textfield() {
@@ -113,6 +124,7 @@ class FilteredList extends Observable {
     }
 
     updateFilteredTerm(term: string) {
+        console.log('updateFilteredTerm', this.key, term);
         if (this.items.length === 0) {
             return;
         }
@@ -121,6 +133,9 @@ class FilteredList extends Observable {
             return item && item.toLowerCase() !== term.toLowerCase() && item.toLowerCase().indexOf(term.toLowerCase()) > -1;
         }) ;
         this.createFiltered(result);
+        if (!this.textfield.hasFocus()) {
+            return;
+        }
         if (this.filteredItems.length > 0) {
             this.parent.showPopup(this.textfield, this.key + "list");
         } else {
@@ -134,7 +149,7 @@ export class Model extends Observable {
     private popup: Popup;
     // _recipient: string
     // _deliverer: string
-    clerkTextField: TextField;
+    clerkTextField: CTextField;
     receiving_clerk: string;
     recipientList: FilteredList;
     delivererList: FilteredList;
@@ -166,7 +181,7 @@ export class Model extends Observable {
         this.delivererList.value = !!value ? value.trim() : value;
     }
 
-    set delivererTextField(value: TextField) {
+    set delivererTextField(value: CTextField) {
         this.delivererList.textfield = value;
     }
     get delivererTextField() {
@@ -189,7 +204,7 @@ export class Model extends Observable {
         this.recipientList.value = !!value ? value.trim() : value;
     }
 
-    set recipientTextField(value: TextField) {
+    set recipientTextField(value: CTextField) {
         this.recipientList.textfield = value;
     }
     get recipientTextField() {
@@ -214,13 +229,8 @@ export class Model extends Observable {
                 vibrator.vibrate(500);
             },
             closeCallback: () => {
-                console.log("Scanner closed @ " + new Date().getTime());
                 setTimeout(() => {
                     this.clerkTextField.focus();
-                    if (device.os === platformNames.android) {
-                        console.log("about to show keyboard");
-                        utils.ad.showSoftInput(this.clerkTextField);
-                    }
                 }, 500);
             }
         });
@@ -278,10 +288,9 @@ export class Model extends Observable {
             "signature/page",
             "context",
             (err, image) => {
-                console.log("onSignature", err, image);
                 if (image) {
                     const img = imageSource.fromNativeSource(image);
-                    this.signatureImage.imageSource = img;
+                    // this.signatureImage.imageSource = img;
                     const folder = fs.knownFolders.documents();
                     const path = fs.path.join(folder.path, "signature_" + Date.now() + ".png");
                     const saved = img.saveToFile(path, "png");
@@ -294,9 +303,7 @@ export class Model extends Observable {
                             this.scans.push(s);
                         });
                         appSettings.setString("scans", ObservableArrayToString(this.scans));
-                        while (this.pendingScans.length) {
-                            this.pendingScans.pop();
-                        }
+                        clearObservableArray(this.pendingScans);
                         vibrator.vibrate(1000);
                     }
                     //save the current entries to present them in a popup on next try
@@ -304,11 +311,11 @@ export class Model extends Observable {
                     this.recipientList.saveCurrentValue();
 
                     // clean up fields
-                    this.delivererTextField.text = this.deliverer = null;
+                    this.recipientTextField.text = this.recipient = null;
                     this.clerkTextField.text = this.receiving_clerk = null;
-                } else {
-                    this.signatureImage.imageSource = null;
+                    this.clerkTextField.blur();
                 }
+                // this.signatureImage.imageSource = null;
                 page.closeModal();
                 // label.text = username + "/" + password;
             },
@@ -325,7 +332,6 @@ export class Model extends Observable {
 
     popupVisible = false;
     showPopup(source, view) {
-        console.log("showPopup", this.popupVisible, source, view);
         if (this.popupVisible) {
             return;
         }
@@ -346,7 +352,6 @@ export class Model extends Observable {
         component.bindingContext = this;
 
         this.popup.showPopup(source, component).then(data => {
-            console.log("popup done", data);
             this.popupVisible = false;
         });
     }
@@ -354,7 +359,6 @@ export class Model extends Observable {
         if (!this.popupVisible) {
             return;
         }
-        console.log("hidepopup");
         this.popupVisible = false;
         this.popup.hidePopup(index);
     }
@@ -363,7 +367,8 @@ export class Model extends Observable {
         if (this.scans.length === 0) {
             return;
         }
-        let fileName = `export_${new Date().valueOf()}.csv`;
+        const now = moment();
+        let fileName = `export_${this.deliverer}_${now.valueOf()}_${now.format('L')}.csv`;
         let documents = fs.knownFolders.documents();
         let thePath = fs.path.join(documents.path, fileName);
 
@@ -389,5 +394,9 @@ export class Model extends Observable {
             options: true, // optional iOS
             animated: true // optional iOS
         });
+    }
+    cleanScans() {
+        clearObservableArray(this.scans);
+        appSettings.remove("scans");
     }
 }
