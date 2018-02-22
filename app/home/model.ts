@@ -368,7 +368,7 @@ export class Model extends Observable {
             return;
         }
         const now = moment();
-        let fileName = `export_${this.deliverer}_${now.valueOf()}_${now.format('L')}.csv`;
+        let fileName = `export_${this.deliverer}_${now.valueOf()}_${now.format('ll')}.csv`;
         let documents = fs.knownFolders.documents();
         let thePath = fs.path.join(documents.path, fileName);
 
