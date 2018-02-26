@@ -76,7 +76,6 @@ class FilteredList extends Observable {
     }
 
     saveCurrentValue = () => {
-        console.log("saveCurrentValue tyr", this.key, this._value);
         const value = this._value.trim();
         console.log("saveCurrentValue", this.key, value);
         if (value.length > 3 && !this.has(value)) {
@@ -94,19 +93,20 @@ class FilteredList extends Observable {
         );
     }
     onTextFieldFocus = () => {
-        console.log('onTextFieldFocus', this.key);
+        console.log("onTextFieldFocus", this.key, this.parent);
         // const value = this._textField.text.trim();
         if (this.filteredItems.length > 0) {
             this.parent.showPopup(this.textfield, this.key + "list");
         }
     };
     onTextFieldBlur = () => {
+        console.log("onTextFieldBlur", this.key, this.parent);
         this.parent.hidePopup();
-    }
+    };
     set textfield(value: CTextField) {
+        console.log("set textfield", this.key, this.parent);
         if (value) {
             this._textField = value;
-            // this._textField.on(TextField.blurEvent, this.onTextFieldBlur);
             this._textField.textField.on(TextField.focusEvent, this.onTextFieldFocus);
             this._textField.textField.on(TextField.blurEvent, this.onTextFieldBlur);
         }
@@ -116,22 +116,29 @@ class FilteredList extends Observable {
     }
 
     set value(value: string) {
-        this._value = value;
-        this.updateFilteredTerm(value);
+        const newValue = !!value ? value.trim() : value;
+        if (this._value !== newValue) {
+            console.log('set value', this.key, newValue);
+            this._value = this._textField.text = newValue;
+            this.updateFilteredTerm(this._value);
+        }
     }
     get value() {
         return this._value;
     }
 
     updateFilteredTerm(term: string) {
-        console.log('updateFilteredTerm', this.key, term);
+        console.log("updateFilteredTerm", this.key, term);
         if (this.items.length === 0) {
             return;
         }
 
-        const result = (!term || term.length === 0)?(this.items as any):this.items.filter(function(item) {
-            return item && item.toLowerCase() !== term.toLowerCase() && item.toLowerCase().indexOf(term.toLowerCase()) > -1;
-        }) ;
+        const result =
+            !term || term.length === 0
+                ? (this.items as any)
+                : this.items.filter(function(item) {
+                      return item && item.toLowerCase() !== term.toLowerCase() && item.toLowerCase().indexOf(term.toLowerCase()) > -1;
+                  });
         this.createFiltered(result);
         if (!this.textfield.hasFocus()) {
             return;
@@ -150,7 +157,7 @@ export class Model extends Observable {
     // _recipient: string
     // _deliverer: string
     clerkTextField: CTextField;
-    receiving_clerk: string;
+    _receiving_clerk: string;
     recipientList: FilteredList;
     delivererList: FilteredList;
     scans = new ObservableArray<any>();
@@ -173,12 +180,25 @@ export class Model extends Observable {
         return this.recipientList.filteredItems;
     }
 
+    get receiving_clerk() {
+        return this._receiving_clerk;
+    }
+
+    set receiving_clerk(value: string) {
+        const newValue = !!value ? value.trim() : value;
+        if (this._receiving_clerk !== newValue) {
+            this._receiving_clerk = newValue;
+            console.log('test', 'clerkTextField', '\'' + newValue + '\'', !!newValue);
+            this.clerkTextField.text = !!newValue?newValue : '';
+        }
+    }
+
     get deliverer() {
         return this.delivererList.value;
     }
 
     set deliverer(value: string) {
-        this.delivererList.value = !!value ? value.trim() : value;
+        this.delivererList.value = value;
     }
 
     set delivererTextField(value: CTextField) {
@@ -201,7 +221,7 @@ export class Model extends Observable {
     }
 
     set recipient(value: string) {
-        this.recipientList.value = !!value ? value.trim() : value;
+        this.recipientList.value = value;
     }
 
     set recipientTextField(value: CTextField) {
@@ -275,6 +295,8 @@ export class Model extends Observable {
     // }
 
     public doSign(args) {
+        this.recipient = null;
+        this.receiving_clerk = null;
         if (this.pendingScans.length === 0) {
             return alert(localize("no_scans"));
         }
@@ -295,11 +317,14 @@ export class Model extends Observable {
                     const path = fs.path.join(folder.path, "signature_" + Date.now() + ".png");
                     const saved = img.saveToFile(path, "png");
                     if (this.pendingScans.length > 0) {
+                        const recipient = this.recipient;
+                        const deliverer = this.deliverer;
+                        const receiving_clerk = this.receiving_clerk;
                         this.pendingScans.forEach((s, index) => {
                             s.signature = path;
-                            s.recipient = this.recipient;
-                            s.deliverer = this.deliverer;
-                            s.receiving_clerk = this.receiving_clerk;
+                            s.recipient = recipient;
+                            s.deliverer = deliverer;
+                            s.receiving_clerk = receiving_clerk;
                             this.scans.push(s);
                         });
                         appSettings.setString("scans", ObservableArrayToString(this.scans));
@@ -311,9 +336,9 @@ export class Model extends Observable {
                     this.recipientList.saveCurrentValue();
 
                     // clean up fields
-                    this.recipientTextField.text = this.recipient = null;
-                    this.clerkTextField.text = this.receiving_clerk = null;
+                    this.recipient = null;
                     this.clerkTextField.blur();
+                    this.receiving_clerk = null;
                 }
                 // this.signatureImage.imageSource = null;
                 page.closeModal();
@@ -324,10 +349,20 @@ export class Model extends Observable {
     }
 
     recipientItemTap(args: ItemEventData) {
-        this.recipient = this.recipientTextField.text = this.filteredRecipientItems.getItem(args.index).name;
+        const index = args.index;
+        const item = this.filteredRecipientItems.getItem(args.index);
+        if (item) {
+            this.recipient = item.name;
+            this.delivererTextField.focus();
+        }
     }
     delivererItemTap(args: ItemEventData) {
-        this.deliverer = this.delivererTextField.text = this.filteredDelivererItems.getItem(args.index).name;
+        const index = args.index;
+        const item = this.filteredDelivererItems.getItem(args.index);
+        if (item) {
+            this.deliverer = item.name;
+            this.delivererTextField.blur();
+        }
     }
 
     popupVisible = false;
@@ -350,17 +385,21 @@ export class Model extends Observable {
         const listPath = fs.path.join(fs.knownFolders.currentApp().path, "/template/" + view + ".xml");
         const component = builder.load(listPath);
         component.bindingContext = this;
-
+        console.log("showPopup", this.popupVisible);
         this.popup.showPopup(source, component).then(data => {
             this.popupVisible = false;
+            console.log("popup done", this.popupVisible);
         });
     }
     hidePopup(index?) {
-        if (!this.popupVisible) {
-            return;
-        }
+        console.log("hidePopup", this.popupVisible);
+        // if (!this.popupVisible) {
+        //     return;
+        // }
         this.popupVisible = false;
-        this.popup.hidePopup(index);
+        if (this.popup) {
+            this.popup.hidePopup(index);
+        }
     }
 
     exportScans() {
@@ -368,7 +407,7 @@ export class Model extends Observable {
             return;
         }
         const now = moment();
-        let fileName = `export_${this.deliverer}_${now.valueOf()}_${now.format('ll')}.csv`;
+        let fileName = `export_${this.deliverer}_${now.valueOf()}_${now.format("ll")}.csv`;
         let documents = fs.knownFolders.documents();
         let thePath = fs.path.join(documents.path, fileName);
 

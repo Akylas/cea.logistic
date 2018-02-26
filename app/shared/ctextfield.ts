@@ -12,10 +12,21 @@ import * as app from "application";
 import { Property } from "tns-core-modules/ui/core/properties";
 import * as utils from "utils/utils";
 
-
 const textProperty = new Property({
     name: "text",
-    affectsLayout: true
+    defaultValue: "",
+    affectsLayout:false,
+    // valueChanged: (target, old, newValue) => {
+    //     console.log("valueChanged", target, old, newValue);
+    //     if (target instanceof CTextField && old !== newValue && target.textField.text !== newValue) {
+    //         console.log("valueChanged prop", target.textField.text, target, old, newValue);
+    //         // target.textField.text = newValue;
+    //     }
+    // }
+});
+const hintProperty = new Property({
+    name: "hint",
+    defaultValue: ""
 });
 let dismissKeyboardTimeoutId: any;
 
@@ -218,6 +229,7 @@ class MyTextField extends TextField {
 export class CTextField extends stackLayout.StackLayout {
     public textField: MyTextField;
     public textinputlayout: TextInputLayout;
+    text: string;
 
     createNativeView() {
         return new MyStackLayout(this._context);
@@ -226,17 +238,45 @@ export class CTextField extends stackLayout.StackLayout {
     constructor() {
         super();
         this.textField = new MyTextField();
-        const textFieldBindingOptions: BindingOptions = {
-            sourceProperty: "text",
-            targetProperty: "text",
-            twoWay: true
-        };
-        this.textField.bind(textFieldBindingOptions, this);
+        this.textField.bind(
+            {
+                sourceProperty: "text",
+                targetProperty: "text",
+                twoWay: true
+            },
+            this
+        );
+        this.textField.bind(
+            {
+                sourceProperty: "hint",
+                targetProperty: "hint",
+                twoWay: true
+            },
+            this
+        );
+        this.textField.bind(
+            {
+                sourceProperty: "color",
+                targetProperty: "color",
+                twoWay: true
+            },
+            this
+        );
         this.textinputlayout = new TextInputLayout();
-
         this.textinputlayout["textField"] = this.textField;
         this.addChild(this.textinputlayout);
     }
+
+    // get text() {
+    //     console.log('get', 'text', this._getValue(textProperty));
+    //     return this._getValue(textProperty);
+    // }
+
+    // set text(value: string) {
+    //     console.log('set', 'text', value);
+    //     this._setValue(textProperty, value);
+    //     this.textField.text = value;
+    // }
 
     public onLoaded(): void {
         super.onLoaded();
@@ -248,28 +288,6 @@ export class CTextField extends stackLayout.StackLayout {
         (this.android as android.view.View).setFocusableInTouchMode(false);
         (this.android as android.view.ViewGroup).setDescendantFocusability(android.view.ViewGroup.FOCUS_AFTER_DESCENDANTS);
     }
-
-    get hint() {
-        return this.textField.hint;
-    }
-    set hint(value) {
-        this.textField.hint = value;
-    }
-    _text: string;
-    get text() {
-        return this._text;
-    }
-    set text(value) {
-        this._text = value;
-        this._setValue(textProperty, value);
-    }
-    get color() {
-        return this.textField.color;
-    }
-    set color(value: Color) {
-        this.textField.color = value;
-    }
-
     focus() {
         const result = this.textField.focus();
         if (result) {
@@ -278,10 +296,16 @@ export class CTextField extends stackLayout.StackLayout {
         return result;
     }
     blur() {
-        (this.android as android.view.View).requestFocus();
+        handleClearFocus(this.textField.android as android.view.View);
+        // (this.textField.android as android.view.View).clearFocus();
     }
+    // focusNext() {
+    //     // handleClearFocus(this.textField.android as android.view.View);
+    //     (this.android as android.view.View).clearFocus();
+    // }
     hasFocus() {
         return (this.textField.android as android.view.View).isFocused();
     }
 }
 textProperty.register(CTextField);
+hintProperty.register(CTextField);

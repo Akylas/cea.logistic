@@ -40,7 +40,7 @@
         <TabViewItem.view>
           <!-- <ScrollView> -->
             <FlexboxLayout flexDirection="column" class="tab-content">
-               <ct:CTextField class="inputlayout" hint="{{ L('recipient') }}" id="recipientTextField" text="{{ recipient }}" color="black"/>
+              <ct:CTextField class="inputlayout" hint="{{ L('recipient') }}" id="recipientTextField" text="{{ recipient }}"/>
               <ct:CTextField class="inputlayout" hint="{{ L('deliverer') }}" id="delivererTextField" text="{{ deliverer }}" />
               <Button class="btn btn-primary" text="scan" tap="{{ doContinuousScan }}"/>
                 <lv:RadListView items="{{ pendingScans }}"  width="100%" flexGrow="1" style="border-color:black;border-radius:2;border-width:2;">
@@ -49,7 +49,7 @@
                     </lv:RadListView.itemTemplate>
                   </lv:RadListView>
             <GridLayout columns="*,*" rows="auto,auto" width="100%" >
-            <ct:CTextField class="inputlayout" col="0" row="0" id="clerkTextField" hint="{{ L('receiving_clerk') }}" text="{{ receiving_clerk }}" />
+              <ct:CTextField class="inputlayout" col="0" row="0" id="clerkTextField" hint="{{ L('receiving_clerk') }}" text="{{ receiving_clerk }}" />
               <Button col="1" row="0" class="btn btn-primary" text="signature" tap="{{ doSign }}"/>
               <Image col="1" row="1" rowSpan="2" id="signature" width="100%" height="100"/>
             </GridLayout>
@@ -61,18 +61,18 @@
       </TabViewItem>
       <TabViewItem title="{{ L('scans') }}">
         <TabViewItem.view>
-            <FlexboxLayout flexDirection="column">
+          <FlexboxLayout flexDirection="column">
+          <StackLayout style="flex:1;">
             <lv:RadListView 
-            id="scansListView"
-            items="{{ scans }}" 
-            flexGrow="1"
-            itemSwipeProgressStarted="onSwipeCellStarted" 
-            swipeActions="true">
+              id="scansListView"
+              items="{{ scans }}" 
+              itemSwipeProgressStarted="onSwipeCellStarted" 
+              swipeActions="true">
             <lv:RadListView.listViewLayout>
               <lv:ListViewLinearLayout scrollDirection="Vertical" itemInsertAnimation="Slide" itemDeleteAnimation="Slide"/>
             </lv:RadListView.listViewLayout>
             <lv:RadListView.itemTemplate>
-            <GridLayout columns="50,*" rows="*,*,*" width="100%" height="80"  backgroundColor="White" style="padding-right:5;padding-top:5;border-bottom-color:lightgray;border-bottom-width:1;" >
+              <GridLayout columns="50,*" rows="*,*,*" width="100%" height="80"  backgroundColor="White" style="padding-right:5;padding-top:5;border-bottom-color:lightgray;border-bottom-width:1;" >
                   <Image col="0" row="0" rowSpan="3" src="{{signature}}"/>
                   <Label col="1" row="0" text="{{timestamp | dateFormatter(dateFormat)}}" style="text-align:right;" color="gray" fontSize="12"/>
                   <Label col="1" row="1" text="{{recipient}}" fontSize="16"/>
@@ -90,9 +90,11 @@
                 </GridLayout>
               </lv:RadListView.itemSwipeTemplate>
             </lv:RadListView>
-            <StackLayout orientation="horizontal">
-              <Button class="btn btn-primary" text="export" tap="{{ exportScans }}"/>
-              <Button class="btn btn-secondary" text="clean" tap="{{ cleanScans }}"/>
+            </StackLayout>
+            <StackLayout orientation="horizontal"
+              style="flex:0 1 auto;">
+              <Button class="btn btn-primary" text="{{ L('export') }}" tap="{{ exportScans }}"/>
+              <Button class="btn btn-secondary" backgroundColor="red" text="{{ L('clean') }}" tap="{{ cleanScans }}"/>
             </StackLayout>
           </FlexboxLayout>
         </TabViewItem.view>
