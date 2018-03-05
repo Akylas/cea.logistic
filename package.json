@@ -47,5 +47,6 @@
     "webpack": "~3.11.0",
     "webpack-bundle-analyzer": "^2.11.0",
     "webpack-sources": "~1.1.0"
-  }
+  },
+  "author": "Martin Guillon<martin.guillon@akylas.fr>"
 }

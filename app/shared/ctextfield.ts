@@ -278,6 +278,15 @@ export class CTextField extends stackLayout.StackLayout {
     //     this.textField.text = value;
     // }
 
+    // [textProperty.getDefault]() {
+    // //     return this._getValue(textProperty);
+    // }
+    // [textProperty.setNative](value: string) {
+    //     console.log('set', 'text', value);
+    //     this._setValue(textProperty, value);
+    //     this.textField.text = value;
+    // }
+
     public onLoaded(): void {
         super.onLoaded();
         (this.textinputlayout.android as android.view.View).setFocusable(false);
@@ -294,6 +303,9 @@ export class CTextField extends stackLayout.StackLayout {
             utils.ad.showSoftInput(this.textField);
         }
         return result;
+    }
+    clearText() {
+        (this.textField.android as android.widget.EditText).setText(null);
     }
     blur() {
         handleClearFocus(this.textField.android as android.view.View);

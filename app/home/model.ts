@@ -43,7 +43,7 @@ class FilteredList extends Observable {
         super();
         this.savekey = "saved" + key;
         this.items = new ObservableArray<string>();
-        let saved: string[] = JSON.parse(appSettings.getString(this.savekey) || "[]");
+        let saved: string[] = JSON.parse(appSettings.getString(this.savekey) || '[ ]');
         console.log("saved", this.savekey, JSON.stringify(saved));
         saved.forEach(s => this.items.push(s));
         this.createFiltered(this.items as any);
@@ -120,6 +120,9 @@ class FilteredList extends Observable {
         if (this._value !== newValue) {
             console.log('set value', this.key, newValue);
             this._value = this._textField.text = newValue;
+            if (!newValue) {
+                this._textField.clearText();
+            }
             this.updateFilteredTerm(this._value);
         }
     }
@@ -187,9 +190,10 @@ export class Model extends Observable {
     set receiving_clerk(value: string) {
         const newValue = !!value ? value.trim() : value;
         if (this._receiving_clerk !== newValue) {
-            this._receiving_clerk = newValue;
-            console.log('test', 'clerkTextField', '\'' + newValue + '\'', !!newValue);
-            this.clerkTextField.text = !!newValue?newValue : '';
+            this._receiving_clerk = this.clerkTextField.text = newValue;
+            if (!newValue) {
+                this.clerkTextField.clearText();
+            }
         }
     }
 
@@ -295,8 +299,8 @@ export class Model extends Observable {
     // }
 
     public doSign(args) {
-        this.recipient = null;
-        this.receiving_clerk = null;
+        // this.recipient = null;
+        // this.receiving_clerk = null;
         if (this.pendingScans.length === 0) {
             return alert(localize("no_scans"));
         }
